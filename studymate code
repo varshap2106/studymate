@@ -1,0 +1,96 @@
+import streamlit as st
+import PyPDF2
+from transformers import pipeline
+
+# Load Hugging Face Q&A model (cached so it loads only once)
+@st.cache_resource
+def load_qa_model():
+    return pipeline("question-answering", model="distilbert-base-uncased-distilled-squad")
+
+qa_pipeline = load_qa_model()
+
+# Streamlit Page Config
+st.set_page_config(page_title="StudyPDF Q&A", layout="wide")
+st.title("📚 StudyPDF - Ask Questions from Your PDF")
+
+# File Uploader
+uploaded_file = st.file_uploader("Upload a PDF file", type="pdf")
+
+if uploaded_file is not None:
+    # Extract text from PDF
+    pdf_text = ""
+    reader = PyPDF2.PdfReader(uploaded_file)
+    for page in reader.pages:
+        text = page.extract_text()
+        if text:  # Only add if text is found
+            pdf_text += text + "\n"
+
+    if not pdf_text.strip():
+        st.error("❌ No extractable text found in this PDF. It may be scanned or image-based.")
+    else:
+        st.success("✅ PDF loaded successfully!")
+
+        # Text Preview
+        with st.expander("Preview Extracted Text"):
+            st.write(pdf_text[:1500] + "..." if len(pdf_text) > 1500 else pdf_text)
+
+        # Question Input
+        question = st.text_input("Ask a question about the PDF:")
+
+        if question:
+            with st.spinner("🔍 Searching for the answer..."):
+                # Limiting context to avoid token overflow
+                context = pdf_text[:3000]
+                result = qa_pipeline(question=question, context=context)
+            
+            st.subheader("Answer:")
+            st.write(result["answer"])
+            st.caption(f"Confidence: {result['score']:.2%}")
+
+else:
+    st.info("📂 Please upload a PDF to start.")
+
+
+#code for asking and uploading question and answer
+import streamlit as st
+import PyPDF2
+from transformers import pipeline
+
+# Load the Hugging Face Q&A model
+@st.cache_resource
+def load_qa_model():
+    return pipeline("question-answering", model="distilbert-base-uncased-distilled-squad")
+
+qa_pipeline = load_qa_model()
+
+st.set_page_config(page_title="StudyPDF Q&A", layout="wide")
+st.title("📚 StudyPDF - Ask Questions from Your PDF")
+
+# File uploader
+uploaded_file = st.file_uploader("Upload a PDF file", type="pdf", key="pdf_uploader_1")
+
+if uploaded_file is not None:
+    # Extract text from PDF
+    reader = PyPDF2.PdfReader(uploaded_file)
+    pdf_text = ""
+    for page in reader.pages:
+        pdf_text += page.extract_text() + "\n"
+
+    st.success("✅ PDF loaded successfully!")
+
+    # Display text preview
+    with st.expander("Preview Extracted Text"):
+        st.write(pdf_text[:1500] + "..." if len(pdf_text) > 1500 else pdf_text)
+
+    # Question input
+    question = st.text_input("Ask a question about the PDF:")
+
+    if question:
+        with st.spinner("Searching for the answer..."):
+            result = qa_pipeline(question=question, context=pdf_text)
+        st.subheader("Answer:")
+        st.write(result["answer"])
+        st.caption(f"Confidence: {result['score']:.2%}")
+
+else:
+    st.info("Please upload a PDF to start.")
