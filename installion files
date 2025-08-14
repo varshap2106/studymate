@@ -1,0 +1,23 @@
+All should be done in vs code terminal.
+
+# to check python installation and version
+python --version
+
+# to check pip installation and version
+pip --version
+
+# to run the codes
+streamlit run study.py(your filename)
+
+# to install streamlit and checking
+pip install streamlit
+
+# installion of pdfplumber
+pip install transformers sentence-transformers pdfplumber
+
+# installing dependencies
+pip install streamlit pyPDF2 transformers torch
+
+# installing of pyPDF2
+pip install pyPDF2
+
